@@ -1,8 +1,6 @@
 # ConTeX
 
-ConTeX is a LuaLaTeX library for technical and language notes. 
-Start with a single `.tex` file or choose a topic template for 
-mathematics, engineering, programming, research, or language study.
+ConTeX is a LuaLaTeX library for technical and language notes.
 
 ## Previews
 
