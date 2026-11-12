@@ -6,7 +6,7 @@ Thumbs.db
 Desktop.ini
 
 # Local helpers, documentation, and demonstrations.
-*.zsh
+/shell/latex.zsh
 /docs/
 *demonstration.tex
 examples/
