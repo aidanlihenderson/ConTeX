@@ -1,0 +1,28 @@
+ConTeX dependencies
+
+Core
+- TeX Live or MacTeX with LuaLaTeX. Add latexmk for the documented build commands.
+- LaTeX article class and packages: iftex, fontspec, mathtools, amsthm,
+  unicode-math, geometry, microtype, xcolor, tcolorbox (skins), graphicx,
+  booktabs, tabularx, caption, fancyhdr, TikZ/PGF (backgrounds and calc),
+  hyperref, and cleveref.
+- Fonts: Libertinus Serif, TeX Gyre Heros, Latin Modern Mono, and Latin
+  Modern Math. Include the Latin Modern Mono bold, italic, and bold italic
+  faces from the Latin Modern font collection.
+
+Add as needed
+- Theorems or language notes: enumitem.
+- IPA: Charis SIL (regular, bold, italic, and bold italic).
+- Arabic: the IPA dependencies above, Babel with Arabic locale data
+  (babel-ar.ini), and Amiri (regular, bold, italic, and bold italic).
+- Circuits, timing, and units: CircuitikZ, tikz-timing, and siunitx.
+- Block diagrams: TikZ libraries arrows.meta, positioning, and shapes.geometric.
+- Plots: pgfplots. Code listings: listings.
+- Pseudocode: algorithm.sty and algpseudocode.sty.
+- Bibliographies: natbib and BibTeX.
+
+Optional tools
+- Creation helpers: zsh and Neovim. Manual setup works with any editor.
+- Snapshot and trajectory tools: Python 3.9 or newer (standard library only).
+- Full verification: Python 3.9 or newer, zsh, LuaLaTeX, latexmk, BibTeX,
+  Poppler's pdfinfo and pdftotext, and pdftoppm for rendered checks.
