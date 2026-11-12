@@ -4,9 +4,24 @@ LuaLaTeX styles and starters for technical and language notes.
 
 ## Previews
 
-| Engineering cover | Arabic and IPA body page |
-| --- | --- |
-| [<img src="previews/engineering-cover.png" width="340" alt="Engineering cover with a circuit motif">](previews/engineering.pdf) | [<img src="previews/arabic-body.png" width="340" alt="Two-column notes with Arabic passages and IPA transcription">](previews/arabic.pdf) |
+<table align="center">
+  <tr>
+    <th>Engineering cover</th>
+    <th>Arabic and IPA body page</th>
+  </tr>
+  <tr>
+    <td>
+      <a href="previews/engineering.pdf">
+        <img src="previews/engineering-cover.png" width="340" alt="Engineering cover with a circuit motif">
+      </a>
+    </td>
+    <td>
+      <a href="previews/arabic.pdf">
+        <img src="previews/arabic-body.png" width="340" alt="Two-column notes with Arabic passages and IPA transcription">
+      </a>
+    </td>
+  </tr>
+</table>
 
 Full PDFs: [Engineering](previews/engineering.pdf) ·
 [Mathematics](previews/mathematics.pdf) ·
