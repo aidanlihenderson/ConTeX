@@ -1,0 +1,10 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tex/links}[2026/10/21 Links and typed references]
+\RequirePackage{tex/core}
+\RequirePackage[unicode,hidelinks]{hyperref}
+% Read final setup values at document start, after every preamble setup call.
+\makeatletter
+\AtBeginDocument{%
+  \hypersetup{pdftitle={\@title},pdfauthor={\@author}}}
+\makeatother
+\RequirePackage[nameinlink,noabbrev]{cleveref}

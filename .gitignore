@@ -1,0 +1,36 @@
+build/
+__pycache__/
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# Local helpers, documentation, and demonstrations.
+*.zsh
+/docs/
+*demonstration.tex
+examples/
+
+# LaTeX auxiliary output; intentional preview PDFs remain included.
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex
+*.synctex.gz
+*.synctex.gz(busy)
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.lof
+*.lot
+*.lol
+*.loa
+*.nav
+*.snm
+*.vrb
+*.xdv
+*.dvi

@@ -1,0 +1,156 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tex/core}[2026/10/21 ConTeX layout and project configuration]
+\RequirePackage{tex/fonts}
+\RequirePackage[letterpaper,margin=1in,headheight=15pt]{geometry}
+\RequirePackage{microtype}
+\RequirePackage{xcolor}
+\definecolor{ConTeXBg}{HTML}{F9F1E4}
+\pagecolor{ConTeXBg}
+% Call in the preamble after core to omit page ink when printing.
+\newcommand{\ConTeXBackgroundOff}{\nopagecolor}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{skins}
+\definecolor{NoteGreen}{HTML}{26965B}
+\definecolor{NoteRed}{HTML}{B94A48}
+\newtcolorbox{notebox}[2][NoteGreen]{%
+  enhanced,
+  frame hidden,
+  colback=#1!5!ConTeXBg,
+  borderline west={2pt}{0pt}{#1},
+  boxsep=0pt,
+  left=10pt,
+  right=10pt,
+  top=8pt,
+  bottom=8pt,
+  before upper={%
+    {\color{#1!60!black}\bfseries #2}\enspace
+  }
+}
+% \begin{notebox}{Note}A short note.\end{notebox}
+% \begin{notebox}[NoteRed]{Warning}A short warning.\end{notebox}
+\definecolor{AcademicAccent}{HTML}{174A63}
+\definecolor{AcademicLight}{HTML}{F1F5F7}
+\RequirePackage{graphicx}
+\graphicspath{{figures/}}
+\RequirePackage{booktabs,tabularx}
+\RequirePackage[font=small,labelfont=bf]{caption}
+% Standard title fields are canonical; legacy accessors remain available.
+\definecolor{ConTeXInk}{HTML}{262626}
+\RequirePackage{tex/title}
+\makeatletter
+\def\ConTeX@unsettitle{\@latex@error{No \noexpand\title given}\@ehc}
+\def\ConTeX@unsetauthor{\@latex@warning@no@line{No \noexpand\author given}}
+\def\ConTeX@defaultdate{\today}
+\ifx\@title\ConTeX@unsettitle\gdef\@title{}\fi
+\ifx\@author\ConTeX@unsetauthor\gdef\@author{}\fi
+\ifx\@date\ConTeX@defaultdate\gdef\@date{}\fi
+\providecommand{\@subtitle}{}
+\providecommand{\subtitle}[1]{\gdef\@subtitle{#1}}
+\providecommand{\ProjectTitle}{\@title}
+\providecommand{\ProjectSubtitle}{\@subtitle}
+\providecommand{\ProjectAuthor}{\@author}
+\providecommand{\ProjectDate}{\@date}
+\providecommand{\ProjectShortTitle}{}
+\providecommand{\ProjectType}{}
+\providecommand{\ProjectAffiliation}{}
+\providecommand{\ProjectCourse}{}
+\providecommand{\ProjectGeneralInfo}{}
+\providecommand{\ProjectMotif}{none}
+\ExplSyntaxOn
+\keys_define:nn { contex/project }
+  {
+    title       .code:n = \title{#1},
+    subtitle    .code:n = \subtitle{#1},
+    author      .code:n = \author{#1},
+    date        .code:n = \date{#1},
+    short-title .code:n = \cs_gset:Npn \ProjectShortTitle {#1},
+    type        .code:n = \cs_gset:Npn \ProjectType {#1},
+    affiliation .code:n = \cs_gset:Npn \ProjectAffiliation {#1},
+    course      .code:n = \cs_gset:Npn \ProjectCourse {#1},
+    general-info .code:n = \cs_gset:Npn \ProjectGeneralInfo {#1},
+    motif .choices:nn = {none,engineering,programming,phonetics,arabic,mathematics,research}
+      { \cs_gset:Npx \ProjectMotif {\l_keys_choice_tl} },
+  }
+\NewDocumentCommand{\projectsetup}{m}
+  { \keys_set:nn { contex/project } {#1} }
+% Expand the field once without expanding formatting inside its value.
+\NewDocumentCommand{\ConTeX@IfBlankTF}{m +m +m}
+  { \tl_if_blank:oTF {#1} {#2} {#3} }
+\ExplSyntaxOff
+\@onlypreamble\projectsetup
+\newcommand{\ConTeX@GeneralInfo}{%
+  \ConTeX@IfBlankTF{\ProjectGeneralInfo}{\@date}{\ProjectGeneralInfo}}
+\newcommand{\ConTeX@HeaderTitle}{%
+  \ConTeX@IfBlankTF{\ProjectShortTitle}{%
+    \ConTeX@IfBlankTF{\@subtitle}{\@title}{\@subtitle}}{\ProjectShortTitle}}
+\RequirePackage{fancyhdr}
+\newcommand{\ConTeX@FooterAuthor}{\begingroup\let\thanks\@gobble\def\and{,\space}\@author\endgroup}
+\newcommand{\ConTeX@RunningStyle}{%
+  \fancyhf{}
+  \fancyhead[L]{\normalfont\rmfamily\small\color{ConTeXInk}%
+    \parbox[b]{\headwidth}{\raggedright\let\thanks\@gobble\ConTeX@HeaderTitle}}
+  \fancyfoot[L]{\normalfont\rmfamily\small\color{ConTeXInk}%
+    \parbox[t]{0.42\headwidth}{\raggedright\ConTeX@FooterAuthor}}
+  \fancyfoot[C]{\normalfont\rmfamily\small\color{ConTeXInk}\thepage}
+  \fancyfoot[R]{\normalfont\rmfamily\small\color{ConTeXInk}%
+    \parbox[t]{0.42\headwidth}{\raggedleft\@date}}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.3pt}}
+\let\ConTeX@headrule\headrule
+\let\ConTeX@footrule\footrule
+\renewcommand{\headrule}{{\color{ConTeXInk!25!ConTeXBg}\ConTeX@headrule}}
+\renewcommand{\footrule}{{\color{ConTeXInk!25!ConTeXBg}\ConTeX@footrule}}
+\pagestyle{fancy}\ConTeX@RunningStyle
+\fancypagestyle{plain}{\ConTeX@RunningStyle}
+% Size running matter after the final preamble setters, before any page ships.
+\newsavebox{\ConTeX@measure}
+\newlength{\ConTeX@runningheight}
+\AtBeginDocument{%
+  \ConTeX@IfBlankTF{\@title}{\gdef\@title{Untitled notes}}{}%
+  \sbox{\ConTeX@measure}{\parbox{\textwidth}{\normalfont\small\raggedright\let\thanks\@gobble\ConTeX@HeaderTitle}}%
+  \setlength{\ConTeX@runningheight}{\dimexpr\ht\ConTeX@measure+\dp\ConTeX@measure+2pt\relax}%
+  \ifdim\headheight<\ConTeX@runningheight\setlength{\headheight}{\ConTeX@runningheight}\fi
+  \sbox{\ConTeX@measure}{\parbox[t]{0.42\textwidth}{\normalfont\small\raggedright\ConTeX@FooterAuthor}}%
+  \setlength{\ConTeX@runningheight}{\dimexpr\ht\ConTeX@measure+\dp\ConTeX@measure+12pt\relax}%
+  \ifdim\footskip<\ConTeX@runningheight\setlength{\footskip}{\ConTeX@runningheight}\fi
+  \sbox{\ConTeX@measure}{\parbox[t]{0.42\textwidth}{\normalfont\small\raggedleft\@date}}%
+  \setlength{\ConTeX@runningheight}{\dimexpr\ht\ConTeX@measure+\dp\ConTeX@measure+12pt\relax}%
+  \ifdim\footskip<\ConTeX@runningheight\setlength{\footskip}{\ConTeX@runningheight}\fi}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0.25em}
+\setlength{\emergencystretch}{2em}
+\newcommand{\divider}[1]{\par\noindent\rule{\linewidth}{#1}\par}
+\newcommand{\ConTeX@TitleField}[2]{%
+  \ConTeX@IfBlankTF{#2}{}{\vspace{0.5em}{#1#2\par}}}
+\newif\ifConTeX@RestorePageAnchor
+\RenewDocumentCommand{\maketitle}{o}{%
+  \ConTeX@RestorePageAnchorfalse
+  \@ifundefined{ifHy@pageanchor}{}{%
+    \ifHy@pageanchor\ConTeX@RestorePageAnchortrue\fi
+    \hypersetup{pageanchor=false}}%
+  \begin{titlepage}
+    \thispagestyle{empty}
+    \normalfont\rmfamily\raggedright\color{ConTeXInk}
+    \setlength{\parindent}{0pt}\setlength{\parskip}{0pt}
+    \noindent\parbox[t][1cm][c]{\textwidth}{%
+      {\color{NoteGreen!60!black}\rule{2.2cm}{0.8pt}}\hfill\ConTeXTopicMotif}\par
+    \vspace{0.065\textheight}
+    {\fontsize{30}{35}\selectfont\bfseries\@title\par}
+    \ConTeX@IfBlankTF{\@subtitle}{}{%
+      \vspace{0.75em}{\Large\color{ConTeXInk!80!ConTeXBg}\@subtitle\par}}
+    \vspace{1.3em}
+    \ConTeX@TitleField{\small\let\and\par}{\@author}
+    \ConTeX@TitleField{\small}{\ProjectAffiliation}
+    \ConTeX@TitleField{\small}{\ProjectCourse}
+    \ConTeX@IfBlankTF{\ProjectGeneralInfo}{%
+      \ConTeX@TitleField{\small}{\@date}}{%
+      \ConTeX@TitleField{\small}{\ProjectGeneralInfo}}
+    \vfill
+    \noindent\hfill\ConTeXLorenzArtwork\par
+    \vspace{0.02\textheight}
+    {\color{NoteRed!70!black}\rule{0.7cm}{0.6pt}\par}
+    \@thanks
+  \end{titlepage}%
+  \ifConTeX@RestorePageAnchor\hypersetup{pageanchor=true}\fi}
+\newcommand{\makeprojecttitle}{\maketitle}
+\makeatother

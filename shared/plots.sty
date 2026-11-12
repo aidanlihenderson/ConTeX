@@ -1,0 +1,6 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tex/plots}[2026/10/18 Data plots]
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18,every axis/.append style={
+  width=0.8\linewidth,height=5cm,grid=major,
+  label style={font=\small},tick label style={font=\small}}}

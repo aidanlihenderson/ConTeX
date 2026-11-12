@@ -1,0 +1,20 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tex/code}[2026/10/18 Source listings]
+\RequirePackage{listings}
+% Common dialect definitions supplied here; highlighting is lexical, not parsing.
+\lstdefinelanguage{Rust}{keywords={fn,let,mut,pub,impl,struct,enum,match,if,else,
+  for,in,while,loop,return,use,mod,trait,Self,self,where,async,await,move},
+  sensitive=true,morecomment=[l]{//},morecomment=[s]{/*}{*/},morestring=[b]"}
+\lstdefinelanguage{SystemVerilog}[]{Verilog}{morekeywords={logic,always_ff,
+  always_comb,always_latch,typedef,enum,struct,interface,modport,package,
+  endpackage,assert,property,endproperty,unique,bit,int}}
+\lstdefinelanguage{RiscV}{keywords={add,addi,sub,mul,div,lw,sw,beq,bne,jal,
+  jalr,lui,auipc,and,andi,or,ori,xor,xori,sll,srl,sra,ret,li,mv},
+  sensitive=true,morecomment=[l]{\#},morestring=[b]"}
+\lstdefinestyle{academic}{basicstyle=\small\ttfamily,keywordstyle=\bfseries\color{AcademicAccent},
+  commentstyle=\itshape\color{black!60},stringstyle=\color{brown!70!black},
+  backgroundcolor=\color{AcademicLight},frame=single,rulecolor=\color{black!15},
+  numbers=left,numberstyle=\tiny\color{black!70},numbersep=7pt,
+  breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,
+  tabsize=2,captionpos=b,xleftmargin=1.5em,framexleftmargin=0.5em}
+\lstset{style=academic}

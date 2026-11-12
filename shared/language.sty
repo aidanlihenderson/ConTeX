@@ -1,0 +1,37 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tex/language}[2026/10/18 Unicode phonetics and examples]
+\RequirePackage{fontspec}
+\RequirePackage{enumitem}
+% Use TeX-distributed font files so an OS-wide font installation is unnecessary.
+\IfFontExistsTF{CharisSIL-Regular.ttf}{%
+  \newfontfamily\IPAfont{CharisSIL-Regular.ttf}[
+    Renderer=HarfBuzz,Scale=MatchLowercase,
+    BoldFont=CharisSIL-Bold.ttf,ItalicFont=CharisSIL-Italic.ttf,
+    BoldItalicFont=CharisSIL-BoldItalic.ttf]
+}{%
+  \PackageError{language}{Charis SIL font files were not found}
+    {Install the TeX Live charissil package, then rebuild with LuaLaTeX.}
+  \newfontfamily\IPAfont{Latin Modern Roman}
+}
+% IPA is Unicode text, never math; preserve combining marks and tone letters.
+\DeclareTextFontCommand{\ipa}{\IPAfont}
+\DeclareRobustCommand{\phonemic}[1]{\ipa{/#1/}}
+\DeclareRobustCommand{\phonetic}[1]{\ipa{[#1]}}
+\DeclareRobustCommand{\orthography}[1]{\textlangle#1\textrangle}
+\DeclareRobustCommand{\wordgloss}[1]{`#1'}
+\newcounter{lingexample}
+\renewcommand{\thelingexample}{\arabic{lingexample}}
+\newenvironment{lingexample}[1][]{%
+  \refstepcounter{lingexample}%
+  \begin{list}{(\thelingexample)}{\setlength{\leftmargin}{2.6em}%
+    \setlength{\labelwidth}{2em}\setlength{\labelsep}{0.6em}%
+    \setlength{\topsep}{0.5\baselineskip}}%
+  \item\relax\if\relax\detokenize{#1}\relax\else\textbf{#1}\quad\fi
+}{\end{list}}
+\setlist[description]{font=\normalfont\bfseries,leftmargin=2em,style=nextline}
+% Safe plain-text fallbacks for PDF bookmarks that use these commands.
+\AtBeginDocument{\ifdefined\pdfstringdefDisableCommands
+  \pdfstringdefDisableCommands{%
+    \def\ipa#1{#1}\def\phonemic#1{/#1/}\def\phonetic#1{[#1]}%
+    \def\orthography#1{<#1>}\def\wordgloss#1{'#1'}}%
+\fi}

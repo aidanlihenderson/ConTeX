@@ -1,0 +1,7 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tex/diagrams}[2026/10/18 Technical diagrams]
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\tikzset{block/.style={draw=AcademicAccent,fill=AcademicLight,rounded corners=2pt,
+  minimum height=9mm,align=center,font=\small\sffamily},
+  flow/.style={-{Latex},thick,draw=AcademicAccent}}

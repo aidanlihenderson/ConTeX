@@ -1,0 +1,37 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tex/arabic}[2026/10/18 Optional English-Arabic study support]
+% Load after language and before links.
+\RequirePackage{fontspec}
+\RequirePackage[english,bidi=basic]{babel}
+\babelprovide[import]{arabic}
+\IfFontExistsTF{Amiri-Regular.ttf}{}{%
+  \PackageError{arabic}{Amiri font files were not found}
+    {Install the TeX Live amiri package, then rebuild with LuaLaTeX.}}
+\babelfont[arabic]{rm}[Renderer=HarfBuzz,Scale=1.12,
+  BoldFont=Amiri-Bold.ttf,ItalicFont=Amiri-Italic.ttf,
+  BoldItalicFont=Amiri-BoldItalic.ttf]{Amiri-Regular.ttf}
+\babelfont[arabic]{sf}[Renderer=HarfBuzz,Scale=1.12,
+  BoldFont=Amiri-Bold.ttf,ItalicFont=Amiri-Italic.ttf,
+  BoldItalicFont=Amiri-BoldItalic.ttf]{Amiri-Regular.ttf}
+\babelfont[arabic]{tt}[Renderer=HarfBuzz,Scale=1.12,
+  BoldFont=Amiri-Bold.ttf,ItalicFont=Amiri-Italic.ttf,
+  BoldItalicFont=Amiri-BoldItalic.ttf]{Amiri-Regular.ttf}
+% Arabic uses an explicit wrapper, making direction changes visible in the source.
+\DeclareRobustCommand{\arabictext}[1]{\foreignlanguage{arabic}{#1}}
+\DeclareRobustCommand{\englishtext}[1]{\foreignlanguage{english}{#1}}
+\newenvironment{arabicparagraph}{\par\smallskip\begin{otherlanguage}{arabic}}{\par\end{otherlanguage}\smallskip}
+\newcommand{\ArabicTableSpacing}{\renewcommand{\arraystretch}{1.3}}
+% Keep IPA left-to-right even when embedded in an Arabic passage.
+\makeatletter
+\ifdefined\ipa
+  \let\ConTeX@OriginalIPA\ipa
+  \RenewDocumentCommand{\ipa}{m}{\foreignlanguage{english}{\ConTeX@OriginalIPA{#1}}}
+\else
+  \PackageError{arabic}{Load language before arabic}
+    {The language module provides the Charis SIL font and IPA commands.}
+\fi
+\makeatother
+\AtBeginDocument{\ifdefined\pdfstringdefDisableCommands
+  \pdfstringdefDisableCommands{%
+    \def\arabictext#1{#1}\def\englishtext#1{#1}}%
+\fi}

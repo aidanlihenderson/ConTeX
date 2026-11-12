@@ -1,0 +1,25 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tex/fonts}[2026/11/08 Shared Unicode font configuration]
+\RequirePackage{iftex}
+\ifLuaTeX\else\PackageError{fonts}{Use LuaLaTeX}{Run latexmk -lualatex main.tex.}\fi
+\RequirePackage{fontspec}
+\IfFontExistsTF{Libertinus Serif}{}{%
+  \PackageError{fonts}{Libertinus Serif was not found}
+    {Install the TeX Live libertinus-fonts package, then rebuild with LuaLaTeX.}}
+\setmainfont{Libertinus Serif}
+\setsansfont{TeX Gyre Heros}[Scale=MatchLowercase]
+% Explicit shapes avoid silent bold/italic substitutions in source listings.
+\setmonofont{lmmono10-regular.otf}[Scale=MatchLowercase,
+  BoldFont=lmmonolt10-bold.otf,ItalicFont=lmmono10-italic.otf,
+  BoldItalicFont=lmmonolt10-boldoblique.otf]
+% Keep the existing notation choices and load mathtools before unicode-math.
+\ExplSyntaxOn
+\msg_redirect_name:nnn {unicode-math}{mathtools-colon}{info}
+\msg_redirect_name:nnn {unicode-math}{mathtools-overbracket}{info}
+\ExplSyntaxOff
+\RequirePackage{mathtools,amsthm}
+\RequirePackage{unicode-math}
+\IfFontExistsTF{Latin Modern Math}{}{%
+  \PackageError{fonts}{Latin Modern Math was not found}
+    {Install the TeX Live lm-math package, then rebuild with LuaLaTeX.}}
+\setmathfont{Latin Modern Math}

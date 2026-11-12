@@ -1,0 +1,44 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tex/title}[2026/11/08 Shared title artwork]
+\RequirePackage{tikz}
+\usetikzlibrary{backgrounds,calc}
+% Authoritative offline trajectory: tools/make-lorenz.py and shared/lorenz-xz.dat.
+% Standalone generation replaces this reader with the same in-memory coordinates.
+\newcommand{\ConTeXLorenzPath}{\draw[
+  draw=NoteGreen!60!black,line width=0.25pt,line cap=round,line join=round
+] plot file {tex/lorenz-xz.dat};}
+\newcommand{\ConTeXLorenzArtwork}{%
+  \begin{tikzpicture}
+    % Trajectory scale is independent of equation typography.
+    \begin{scope}[x=0.12cm,y=0.12cm]
+      \ConTeXLorenzPath
+    \end{scope}
+    \node[anchor=north east,inner sep=0pt,text=ConTeXInk,font=\small]
+      at ([yshift=-10pt]current bounding box.south east)
+      {$\begin{gathered}
+        \begin{aligned}
+          \dot{x}&=\sigma(y-x),\\
+          \dot{y}&=x(\rho-z)-y,\\
+          \dot{z}&=xy-\beta z
+        \end{aligned}\\[3pt]
+        \scriptstyle\sigma=10,\quad\rho=28,\quad\beta=\tfrac83
+      \end{gathered}$};
+  \end{tikzpicture}}
+% Legacy artwork API now renders the Lorenz replacement.
+\newcommand{\ConTeXSpiralArtwork}{\ConTeXLorenzArtwork}
+\makeatletter
+\newcommand{\ConTeXTopicMotif}{\csname ConTeX@motif@\ProjectMotif\endcsname}
+\expandafter\newcommand\csname ConTeX@motif@none\endcsname{}
+\newcommand{\ConTeX@motif@engineering}{\begin{tikzpicture}[x=1cm,y=1cm,baseline=0pt,draw=NoteGreen!60!black,line width=0.5pt]
+  \draw (0,0)--(0.35,0)--(0.35,0.3)--(1.2,0.3);\draw (0.7,-0.2)--(0.7,0.1)--(1.4,0.1);\end{tikzpicture}}
+\newcommand{\ConTeX@motif@programming}{\begin{tikzpicture}[x=1cm,y=1cm,baseline=0pt,draw=NoteGreen!60!black,line width=0.5pt]
+  \foreach \x in {0,0.6,1.2}{\draw (\x,0) rectangle +(0.2,0.2);}\draw (0.2,0.1)--(0.6,0.1) (0.8,0.1)--(1.2,0.1);\end{tikzpicture}}
+\newcommand{\ConTeX@motif@phonetics}{\begin{tikzpicture}[x=1cm,y=1cm,baseline=0pt,draw=NoteGreen!60!black,line width=0.5pt]
+  \draw[domain=0:1.4,samples=51] plot (\x,{0.18*sin(720*\x)});\end{tikzpicture}}
+\newcommand{\ConTeX@motif@arabic}{\begin{tikzpicture}[x=1cm,y=1cm,baseline=0pt,draw=NoteGreen!60!black,line width=0.5pt]
+  \draw (0,0) rectangle (0.5,0.5);\draw (0.25,-0.1)--(0.6,0.25)--(0.25,0.6)--(-0.1,0.25)--cycle;\end{tikzpicture}}
+\newcommand{\ConTeX@motif@mathematics}{\begin{tikzpicture}[x=1cm,y=1cm,baseline=0pt,draw=NoteGreen!60!black,line width=0.5pt]
+  \draw (0,0)--(1.3,0) (0,0)--(0,0.5);\draw[domain=0:1.2,samples=31] plot (\x,{0.3*\x*\x});\end{tikzpicture}}
+\newcommand{\ConTeX@motif@research}{\begin{tikzpicture}[x=1cm,y=1cm,baseline=0pt,draw=NoteGreen!60!black,line width=0.5pt]
+  \draw (0,0)--(0.6,0.35)--(1.2,0)--(0.6,-0.2)--cycle (0.6,0.35)--(0.6,-0.2);\foreach \p in {(0,0),(0.6,0.35),(1.2,0),(0.6,-0.2)}{\draw \p circle (1pt);}\end{tikzpicture}}
+\makeatother
