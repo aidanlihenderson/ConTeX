@@ -2,6 +2,19 @@
 
 LuaLaTeX styles and starters for technical and language notes.
 
+## Previews
+
+| Engineering cover | Arabic and IPA body page |
+| --- | --- |
+| [<img src="previews/engineering-cover.png" width="340" alt="Engineering cover with a circuit motif">](previews/engineering.pdf) | [<img src="previews/arabic-body.png" width="340" alt="Two-column notes with Arabic passages and IPA transcription">](previews/arabic.pdf) |
+
+Full PDFs: [Engineering](previews/engineering.pdf) ·
+[Mathematics](previews/mathematics.pdf) ·
+[Programming](previews/programming.pdf) ·
+[Research](previews/research.pdf) ·
+[Language](previews/language.pdf) ·
+[Arabic](previews/arabic.pdf)
+
 Use LuaLaTeX and latexmk from TeX Live or MacTeX, with BibTeX for bibliographies.
 The fonts are Libertinus Serif, TeX Gyre Heros, Latin Modern Mono, and Latin Modern
 Math. Language notes use Charis SIL for IPA and Amiri for Arabic.
@@ -10,24 +23,59 @@ The shared styles use fontspec, mathtools, amsthm, unicode-math, TikZ, tcolorbox
 and hyperref with cleveref. Optional modules add PGFPlots, CircuitikZ, tikz-timing,
 siunitx, listings, algorithm and algpseudocode, natbib, and Babel.
 
-## Setup
+## Quick start
 
-Source the helper from zsh. Run these lines again in any open shell that points
-to an earlier library location.
+Install LuaLaTeX and latexmk from TeX Live or MacTeX. See
+[dependencies.txt](dependencies.txt) for the fonts and packages used by each profile.
+
+```sh
+mkdir -p "$HOME/Code"
+git clone https://github.com/aidanlihenderson/ConTeX.git "$HOME/Code/ConTeX"
+```
+
+If you already have a checkout, use its location in the commands below.
+
+### Try a single-file starter
+
+From the directory where you want to keep your notes, copy the
+[general starter](standalone/main.tex) into a new file:
+
+```sh
+cp -i "$HOME/Code/ConTeX/standalone/main.tex" "Quick Notes.tex"
+latexmk -lualatex -outdir=build -halt-on-error "Quick Notes.tex"
+```
+
+Open `build/Quick Notes.pdf`. Edit the title fields in the preamble and write
+your notes below `\maketitle` using any text editor. For Arabic and IPA, copy
+the [Arabic starter](standalone/arabic.tex) instead and install its listed
+language dependencies.
+
+### Create a topic project with zsh and Neovim
+
+Use a topic project when you want separate files for your notes, figures,
+code, or references. The creation helper requires zsh and Neovim.
 
 ```zsh
 export LATEX_LIBRARY="$HOME/Code/ConTeX"
 source "$LATEX_LIBRARY/shell/latex.sh"
-
 newtex e "Engineering Notes"
-newtex l "Arabic Notes" --arabic
-tex "Quick Notes"
-tex "Arabic Notes" --arabic
 ```
 
-`newtex` creates a project under `LATEX_HOME`, which defaults to
-`$HOME/Desktop/Notes`. `tex` creates or opens a self-contained file in the current
-directory. Both open the source in Neovim.
+`newtex` creates the project under `LATEX_HOME` (default `$HOME/Desktop/Notes`),
+copies the shared styles and data into the project's `tex/` directory, and opens
+`main.tex` in Neovim. After exiting Neovim, run this from the project directory:
+
+```sh
+latexmk -halt-on-error main.tex
+```
+
+Open `build/main.pdf`. See the [profile table](#topics-and-environments) for
+the other topic codes. For an Arabic project, use
+`newtex l "Arabic Notes" --arabic`.
+
+The same helper also provides `tex "Quick Notes"` and
+`tex "Arabic Notes" --arabic` for creating or opening a single-file note in
+the current directory.
 
 ## Write and build
 
