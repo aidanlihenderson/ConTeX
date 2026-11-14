@@ -23,6 +23,6 @@ Add as needed
 
 Optional tools
 - Creation helpers: zsh and Neovim. Manual setup works with any editor.
-- Snapshot and trajectory tools: Python 3.9 or newer (standard library only).
+- Trajectory generator: Python 3.9 or newer (standard library only).
 - Full verification: Python 3.9 or newer, zsh, LuaLaTeX, latexmk, BibTeX,
   Poppler's pdfinfo and pdftotext, and pdftoppm for rendered checks.

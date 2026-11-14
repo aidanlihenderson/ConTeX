@@ -26,7 +26,6 @@ ConTeX is a LuaLaTeX library for technical and language notes.
 Full PDFs: [Engineering](previews/engineering.pdf) ·
 [Mathematics](previews/mathematics.pdf) ·
 [Programming](previews/programming.pdf) ·
-[Research](previews/research.pdf) ·
 [Language](previews/language.pdf) ·
 [Arabic](previews/arabic.pdf)
 
@@ -50,25 +49,9 @@ git clone https://github.com/aidanlihenderson/ConTeX.git "$HOME/Code/ConTeX"
 
 If you already have a checkout, use its location in the commands below.
 
-### Try a single-file starter
-
-From the directory where you want to keep your notes, copy the
-[general starter](standalone/main.tex) into a new file:
-
-```sh
-cp -i "$HOME/Code/ConTeX/standalone/main.tex" "Quick Notes.tex"
-latexmk -lualatex -outdir=build -halt-on-error "Quick Notes.tex"
-```
-
-Open `build/Quick Notes.pdf`. Edit the title fields in the preamble and write
-your notes below `\maketitle` using any text editor. For Arabic and IPA, copy
-the [Arabic starter](standalone/arabic.tex) instead and install its listed
-language dependencies.
-
 ### Create a topic project with zsh and Neovim
 
-Use a topic project when you want separate files for your notes, figures,
-code, or references. The creation helper requires zsh and Neovim.
+The creation helper requires zsh and Neovim.
 
 ```zsh
 export LATEX_LIBRARY="$HOME/Code/ConTeX"
@@ -88,14 +71,13 @@ Open `build/main.pdf`. See the [profile table](#topics-and-environments) for
 the other topic codes. For an Arabic project, use
 `newtex l "Arabic Notes" --arabic`.
 
-The same helper also provides `tex "Quick Notes"` and
-`tex "Arabic Notes" --arabic` for creating or opening a single-file note in
-the current directory.
+Use `tex "Notes"` or `tex "Notes.tex"` to open an existing file in the current
+directory with Neovim.
 
 ## Write and build
 
 Set the title fields in the project’s `main.tex` and write in
-`sections/body.tex`. In a standalone file, write directly below `\maketitle`.
+`sections/body.tex`.
 
 ```latex
 \title{Fourier Analysis}
@@ -109,14 +91,13 @@ Set the title fields in the project’s `main.tex` and write in
 \end{document}
 ```
 
-Build a project with `latexmk -halt-on-error main.tex` or a standalone file with
-`latexmk -lualatex -outdir=build -halt-on-error "Quick Notes.tex"`.
+Build a project with `latexmk -halt-on-error main.tex`.
 
 Add `\ConTeXBackgroundOff` in the preamble to omit the page background for
 printing. Topic starters select their cover motif. Use
 `\projectsetup{motif={none}}` to hide it or choose `engineering`, `programming`,
-`phonetics`, `arabic`, `mathematics`, or `research`. General standalone notes
-default to `none`, and Arabic standalone notes default to `arabic`.
+`phonetics`, `arabic`, `mathematics`, or `research`. The `research` motif is
+available as a cover option for any profile.
 
 ## Topics and environments
 
@@ -125,10 +106,20 @@ default to `none`, and Arabic standalone notes default to `arabic`.
 | Mathematics (`m`) | `theorem`, `lemma`, `corollary`, `proposition`, `definition`, `example`, `problem`, `remark`, `proof`, `solution` |
 | Engineering (`e`) | `circuitikz`, `tikztimingtable`, SI units |
 | Programming (`p`) | `lstlisting`, `algorithm`, `algorithmic` |
-| Research (`r`) | `tikzpicture`, PGFPlots `axis`, BibTeX citations |
 | Language (`l`) | `lingexample` and IPA commands |
 | Arabic (`l --arabic`) | `arabicparagraph`, `lingexample`, inline Arabic and IPA |
 | All profiles | `notebox` |
 
 In projects, load `tex/core` first, any optional `tex/<name>` modules next, and
 `tex/links` last.
+
+Any profile can load `tex/plots` for PGFPlots or `tex/bibliography` for BibTeX
+citations. For a bibliography, create `references.bib` in the project root and
+add `\printprojectbibliography` where the references should appear.
+
+## Verify the library
+
+Run `python3 tools/verify.py` to generate and build the four project profiles
+and the Arabic variant in a temporary directory. Add `--require-demos` if you
+have the local demonstration sources and want to require all five builds.
+Add `--render` to render the resulting PDFs with Poppler.

@@ -25,7 +25,7 @@ _contex_write_starter() {
 newtex() {
     local name_re='^[A-Za-z0-9][A-Za-z0-9._ -]*$'
     if (( $# < 2 || $# > 3 )); then
-        print -r -- 'Usage: newtex m|e|r|p|l "Project Name" [--arabic]'; return 1
+        print -r -- 'Usage: newtex m|e|p|l "Project Name" [--arabic]'; return 1
     fi
     if [[ ! "$2" =~ $name_re ]]; then
         print -r -- 'Use a name starting with a letter/digit; then letters, digits, spaces, dots, underscores or hyphens.'; return 1
@@ -41,10 +41,9 @@ newtex() {
     case "$1" in
         m) profile=mathematics ;;
         e) profile=engineering ;;
-        r) profile=research ;;
         p) profile=programming ;;
         l) profile=language ;;
-        *) print -r -- 'Choose m (math), e (engineering), r (research), p (programming), l (language).'; return 1 ;;
+        *) print -r -- 'Choose m (math), e (engineering), p (programming), l (language).'; return 1 ;;
     esac
     local destination="$LATEX_HOME/$2"
     local source_dir="$LATEX_LIBRARY/templates/$profile"
@@ -80,37 +79,20 @@ newtex() {
 
 tex() {
     local name_re='^[A-Za-z0-9][A-Za-z0-9._ -]*$'
-    if (( $# < 1 || $# > 2 )); then
-        print -r -- 'Usage: tex "filename" [--arabic]'; return 1
+    # Accept the former --arabic option when opening existing files.
+    if (( $# < 1 || $# > 2 )) || { (( $# == 2 )) && [[ "$2" != --arabic ]]; }; then
+        print -r -- 'Usage: tex "filename" (open an existing .tex file in the current directory)'; return 1
     fi
     if [[ ! "$1" =~ $name_re ]]; then
         print -r -- 'Use a simple filename in the current directory, starting with a letter or digit.'; return 1
-    fi
-    local use_arabic=0
-    if (( $# == 2 )); then
-        if [[ "$2" != --arabic ]]; then
-            print -r -- 'The only optional flag is --arabic.'; return 1
-        fi
-        use_arabic=1
     fi
     local filename="$1"
     [[ "$filename" == *.tex ]] || filename="${filename}.tex"
     if [[ -L "$filename" || ( -e "$filename" && ! -f "$filename" ) ]]; then
         print -r -- "Not a regular non-link file: $filename"; return 1
     fi
-    if [[ -e "$filename" ]]; then
-        if (( use_arabic )); then
-            print -r -- 'Opening existing file unchanged; --arabic selects a starter only for a new file.'
-        fi
-    else
-        local template_file="$LATEX_LIBRARY/standalone/main.tex"
-        if (( use_arabic )); then
-            template_file="$LATEX_LIBRARY/standalone/arabic.tex"
-        fi
-        if [[ ! -f "$template_file" || ! -r "$template_file" ]]; then
-            print -r -- "Standalone template not readable: $template_file"; return 1
-        fi
-        _contex_write_starter "$template_file" "$filename" || return 1
+    if [[ ! -f "$filename" ]]; then
+        print -r -- "File does not exist: $filename"; return 1
     fi
     nvim "$filename"
 }

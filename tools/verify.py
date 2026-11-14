@@ -16,7 +16,6 @@ def main():
     templates=[*ROOT.glob('templates/*/main.tex'),ROOT/'variants/language-arabic/main.tex']
     if args.require_demos:
         required=[p.parent/name for p in templates for name in ('demonstration.tex','examples/body.tex')]
-        required += [ROOT/'standalone'/name for name in ('demonstration.tex','arabic-demonstration.tex','examples/body.tex','examples/arabic-body.tex')]
         missing=[str(p.relative_to(ROOT)) for p in required if not p.is_file()]
         if missing:raise RuntimeError('Required demonstrations missing: '+', '.join(missing))
     out=args.output.resolve() if args.output else Path(tempfile.mkdtemp(prefix='contex-verify-'))
@@ -40,13 +39,12 @@ def main():
     run(['zsh','-n',str(ROOT/'shell/latex.sh')])
     if (ROOT/'shell/latex.zsh').is_file():run(['zsh','-n',str(ROOT/'shell/latex.zsh')])
     checks.append('Shell syntax')
-    run([sys.executable,str(ROOT/'tools/make-standalone.py'),'--check']);checks.append('Standalone snapshots match source modules')
     if list(ROOT.rglob('metadata.tex')):raise AssertionError('Unexpected metadata.tex remains')
     # Generate projects through the real shell helpers; stub only the editor.
     env.update(LATEX_HOME=str(out/'projects'),LATEX_LIBRARY=str(ROOT))
     def shell(code,check=True,cwd=None):
-        return run(['zsh','-f','-c','source "$LATEX_LIBRARY/shell/latex.sh"\nnvim() { return 0; }\n'+code],cwd or out,check)
-    profiles=[('e','Engineering Notes'),('m','Mathematics Notes'),('r','Research Notes'),('p','Programming Notes'),('l','Language Notes')]
+        return run(['zsh','-f','-c','source "$LATEX_LIBRARY/shell/latex.sh"\nnvim() { print -r -- "$#:$*"; }\n'+code],cwd or out,check)
+    profiles=[('e','Engineering Notes'),('m','Mathematics Notes'),('p','Programming Notes'),('l','Language Notes')]
     for profile,name in profiles:shell('newtex '+profile+' "'+name+'"')
     shell('newtex l "Arabic Notes" --arabic')
     projects=sorted((out/'projects').iterdir())
@@ -57,7 +55,7 @@ def main():
         assert 'twocolumn' in re.search(r'\\documentclass\[([^]]+)\]',text).group(1).split(',')
         assert not (d/'metadata.tex').exists()
         assert (d/'tex/core.sty').is_file()
-        motif={'Engineering':'engineering','Programming':'programming','Mathematics':'mathematics','Research':'research','Language':'phonetics','Arabic':'arabic'}[d.name.removesuffix(' Notes')]
+        motif={'Engineering':'engineering','Programming':'programming','Mathematics':'mathematics','Language':'phonetics','Arabic':'arabic'}[d.name.removesuffix(' Notes')]
         assert re.search(r'motif\s*=\s*\{'+motif+r'\}',text)
         assert (d/'tex/lorenz-xz.dat').read_bytes()==(ROOT/'shared/lorenz-xz.dat').read_bytes()
         template=ROOT/('variants/language-arabic' if d.name=='Arabic Notes' else 'templates/'+d.name.removesuffix(' Notes').lower())
@@ -66,37 +64,37 @@ def main():
     legacy.write_text('  date = {2000-01-01}, % creation-date\n')
     shell('_contex_write_starter legacy-date-source.tex legacy-date-target.tex')
     assert (out/'legacy-date-target.tex').read_text()=='  date = {'+stamp+'}, % creation-date\n'
-    checks.append('All six real creation paths; spaces in names; fixed creation dates')
+    checks.append('All five real creation paths; spaces in names; fixed creation dates')
     original=(projects[0]/'main.tex').read_bytes()
     assert shell('newtex e "'+projects[0].name+'"',False).returncode
     assert (projects[0]/'main.tex').read_bytes()==original
     before=set((out/'projects').iterdir())
-    for code in ('newtex x Bad','newtex e "../Bad"','newtex e Bad --arabic','newtex l Bad --unknown','newtex l Bad --arabic extra'):
+    for code in ('newtex r Retired','newtex x Bad','newtex e "../Bad"','newtex e Bad --arabic','newtex l Bad --unknown','newtex l Bad --arabic extra'):
         assert shell(code,False).returncode,code
     assert set((out/'projects').iterdir())==before
     shell('newtex l "Trailing dot."')
     checks.append('Existing-project preservation; invalid names/profiles/flags; trailing-dot name')
-    stand=out/'standalone';stand.mkdir()
-    for code in ('tex "quick notes"','tex arabic --arabic','tex with-extension.tex'):
-        shell(code,cwd=stand)
-    assert (stand/'quick notes.tex').exists() and not (stand/'with-extension.tex.tex').exists()
-    existing=stand/'quick notes.tex';existing.write_text('existing content\n')
-    shell('tex "quick notes" --arabic',cwd=stand);assert existing.read_text()=='existing content\n'
-    (stand/'directory.tex').mkdir();(stand/'link.tex').symlink_to(existing)
-    assert shell('tex directory',False,stand).returncode
-    assert shell('tex link',False,stand).returncode
+    notes = out / 'existing-notes'
+    notes.mkdir()
+    assert shell('tex missing', False, notes).returncode
+    assert shell('tex missing --arabic', False, notes).returncode
+    assert not list(notes.iterdir())
+    existing = notes / 'quick notes.tex'
+    original_note = r'\date{2000-01-01}' + '\n'
+    existing.write_text(original_note)
+    for code in ('tex "quick notes"', 'tex "quick notes.tex"', 'tex "quick notes" --arabic'):
+        assert shell(code, cwd=notes).stdout.strip() == '1:quick notes.tex'
+        assert existing.read_text() == original_note
+    assert shell('tex "quick notes" --unknown', False, notes).returncode
+    (notes / 'directory.tex').mkdir()
+    (notes / 'link.tex').symlink_to(existing)
+    assert shell('tex directory', False, notes).returncode
+    assert shell('tex link', False, notes).returncode
     # A project destination link, including a dangling link, must also be refused.
     (out/'projects/Linked').symlink_to(out/'absent')
     assert shell('newtex e Linked',False).returncode
     assert shell('LATEX_LIBRARY="$LATEX_HOME/missing"; newtex e Missing',False).returncode
-    assert shell('LATEX_LIBRARY="$LATEX_HOME/missing"; tex missing',False,stand).returncode
-    assert not (stand/'missing.tex').exists()
-    for name,src in [('quick notes.tex','main.tex'),('arabic.tex','arabic.tex')]:
-        # The deliberately edited preservation fixture is restored only in the test tree.
-        (stand/name).unlink();shell('tex "'+name+'"'+(' --arabic' if name=='arabic.tex' else ''),cwd=stand)
-    for name in ('demonstration.tex','arabic-demonstration.tex'):
-        if (ROOT/'standalone'/name).is_file():shutil.copyfile(ROOT/'standalone'/name,stand/name)
-    checks.append('Standalone creation, extensions, existing-file preservation, links/directories and missing templates')
+    checks.append('tex opens existing files unchanged and refuses missing files, directories, links and invalid flags')
     def build(d,entry,label,expected=None,engine=None):
         argv=engine or ['latexmk','-lualatex','-outdir=build','-halt-on-error',entry]
         p=run(argv,d,False);logfile=out/(re.sub('[^A-Za-z0-9_-]','-',label)+'.txt');logfile.write_text(p.stdout)
@@ -119,21 +117,15 @@ def main():
         print('PASS',label,flush=True)
         return info
     for d in projects:
-        build(d,'main.tex',d.name+' starter')
-        if (d/'demonstration.tex').is_file():build(d,'demonstration.tex',d.name+' demonstration')
+        build(d,'main.tex',d.name+' starter',engine=['latexmk','-halt-on-error','main.tex'])
+        if (d/'demonstration.tex').is_file():
+            build(d,'demonstration.tex',d.name+' demonstration',
+                  engine=['latexmk','-halt-on-error','demonstration.tex'])
         else:skipped.append(d.name+' demonstration')
         fls=(d/'build/main.fls').read_text()
         excluded=['circuitikz.sty','pgfplots.sty','listings.sty','natbib.sty','algorithm.sty']
         assert not any('/'+name in fls for name in excluded),(d,'Starter unexpectedly loaded optional modules')
     checks.append('Minimal starter dependency audit')
-    for entry in ('quick notes.tex','arabic.tex','demonstration.tex','arabic-demonstration.tex'):
-        if (stand/entry).is_file():build(stand,entry,'standalone '+entry.removesuffix('.tex'))
-        else:skipped.append('standalone '+entry.removesuffix('.tex'))
-    assert not list(stand.glob('*.dat')) and not (stand/'tex').exists()
-    for entry in ('quick notes','arabic'):
-        fls=(stand/'build'/(entry+'.fls')).read_text()
-        assert 'lorenz-xz.dat' not in fls and str(ROOT/'shared') not in fls
-    checks.append('Two standalone files compile together without sidecars or shared library lookup')
     fixtures=out/'fixtures';fixtures.mkdir();shutil.copytree(ROOT/'shared',fixtures/'tex')
     pre='\\documentclass[11pt,twocolumn]{article}\n\\usepackage{tex/core}\n\\usepackage{tex/links}\n'
     def fixture(name,content,expected=None):
@@ -166,11 +158,17 @@ def main():
     (fixtures/'wrong-engine.tex').write_text(pre+r'\projectsetup{title={Engine Check}}\begin{document}Body.\end{document}')
     build(fixtures,'wrong-engine.tex','wrong-engine','Use LuaLaTeX',
           ['pdflatex','-interaction=nonstopmode','-halt-on-error','-output-directory=build','wrong-engine.tex'])
-    # Exercise the exact creation helper's one-time date behavior across a second open.
-    saved=(stand/'arabic.tex').read_bytes();shell('tex arabic --arabic',cwd=stand);assert (stand/'arabic.tex').read_bytes()==saved
-    checks.append('Opening existing notes preserves their fixed date')
     # Integration covers all optional features, bibliography, Unicode/Arabic, and notation.
-    inter=out/'integration';shutil.copytree(ROOT/'templates/research',inter);shutil.copytree(ROOT/'shared',inter/'tex')
+    inter = out / 'integration'
+    inter.mkdir()
+    shutil.copytree(ROOT / 'shared', inter / 'tex')
+    (inter / 'references.bib').write_text("""@article{shannon1948,
+  author = {Shannon, Claude E.},
+  title = {A Mathematical Theory of Communication},
+  journal = {The Bell System Technical Journal},
+  year = {1948}
+}
+""")
     modules=['core','math','theorems','diagrams','plots','engineering','code','algorithms','bibliography','language','arabic','links']
     content='\\documentclass[twocolumn]{article}\n'+''.join('\\usepackage{tex/'+m+'}\n' for m in modules)+r'''
 \projectsetup{title={Optional Module Integration},short-title={Integration}}
@@ -210,7 +208,7 @@ $\norm*{\vect{x}}_2$, $\coloneqq$, $\overbracket{a+b}$.
 \end{document}
 '''
     motifs={'Engineering Notes':'engineering','Programming Notes':'programming',
-            'Mathematics Notes':'mathematics','Research Notes':'research',
+            'Mathematics Notes':'mathematics',
             'Language Notes':'phonetics','Arabic Notes':'arabic'}
     for d in projects:
         preamble=(d/'main.tex').read_text().split(r'\title{',1)[0]
@@ -230,23 +228,12 @@ $\norm*{\vect{x}}_2$, $\coloneqq$, $\overbracket{a+b}$.
         assert 'CONTEX-MOTIF='+motifs[d.name] in (d/'build/verify-missing.log').read_text()
         text=run(['pdftotext',str(d/'build/verify-missing.pdf'),'-']).stdout
         assert 'Example Author' not in text and '2026-11-08' not in text
-    for source,label in [('quick notes.tex','general'),('arabic.tex','Arabic')]:
-        preamble=(stand/source).read_text().split(r'\title{Document Title}',1)[0]
-        for mode in ['complete','missing']:
-            fields='\\title{Standalone '+label+' notes}\n'
-            if mode=='complete':fields+='\\subtitle{A self-contained title}\n\\author{Example Author}\n\\date{2026-11-08}\n'
-            name='verify-'+label.lower()+'-'+mode+'.tex'
-            (stand/name).write_text(preamble+fields+title_body())
-            build(stand,name,'standalone '+label+' '+mode+' title')
-            assert 'CONTEX-MOTIF='+('arabic' if label=='Arabic' else 'none') in (stand/'build'/(Path(name).stem+'.log')).read_text()
-    checks.append('Complete/missing standard fields and two-column restoration in every profile and standalone form')
+    checks.append('Complete/missing standard fields and two-column restoration in every profile')
     fixture('explicit-no-motif',pre+r'\projectsetup{motif={engineering}}\projectsetup{motif={none}}\begin{document}\typeout{CONTEX-MOTIF=\ProjectMotif}\maketitle Body.\end{document}')
     assert 'CONTEX-MOTIF=none' in (fixtures/'build/explicit-no-motif.log').read_text()
-    # A standalone may explicitly choose a topic; the legacy artwork name works.
-    embedded=(stand/'quick notes.tex').read_text().split(r'\title{Document Title}',1)[0]
-    (stand/'selected-topic.tex').write_text(embedded+r'\title{Selected topic}\projectsetup{motif={research}}\begin{document}\maketitle\ConTeXSpiralArtwork\end{document}')
-    build(stand,'selected-topic.tex','standalone selected topic and legacy artwork alias')
-    checks.append('Default motifs, explicit none override, explicit standalone topic and legacy artwork alias')
+    fixture('research-cover-motif',pre+r'\title{Selected motif}\projectsetup{motif={research}}\begin{document}\typeout{CONTEX-MOTIF=\ProjectMotif}\maketitle\ConTeXSpiralArtwork\end{document}')
+    assert 'CONTEX-MOTIF=research' in (fixtures/'build/research-cover-motif.log').read_text()
+    checks.append('Default motifs, explicit none, research cover motif and legacy artwork alias')
     chapter=pre.replace('{article}','{report}')+r'''
 \title{Chapter style check}\subtitle{Running matter on plain pages}\author{Example Author}\date{2026-11-08}
 \begin{document}\maketitle\chapter{First chapter}Chapter-start content.
